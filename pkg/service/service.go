@@ -18,6 +18,6 @@ type ServiceInterface interface {
 
 func New(repo *repo.Repo) *Service {
 	return &Service{
-		ServiceInterface: NewService(repo.RepoInterface),
+		ServiceInterface: NewService(repo),
 	}
 }
