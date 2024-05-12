@@ -7,19 +7,22 @@ import (
 
 type HandlersInterface interface {
 	GetTasks(c *gin.Context)
+	GetTaskById(c *gin.Context)
 	CreateTask(c *gin.Context)
 	UpdateTask(c *gin.Context)
 	DeleteTask(c *gin.Context)
+	DoneTask(c *gin.Context)
+	InitRoutes(mux *gin.Engine)
+	Index(c *gin.Context)
+	NextDate(c *gin.Context)
 }
 
 type Handlers struct {
 	HandlersInterface
 }
 
-
 func New(services *service.Service) *Handlers {
 	return &Handlers{
 		HandlersInterface: NewController(services),
 	}
 }
-

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"log"
 	"os"
-	"path"
+
+	_ "github.com/mattn/go-sqlite3"
 
 	//_ "github.com/maxim-shestakov/final-yandex-project/docs"
 
@@ -12,6 +14,10 @@ import (
 	// "github.com/maxim-shestakov/final-yandex-project/pkg/service"
 
 	gin "github.com/gin-gonic/gin"
+	"github.com/maxim-shestakov/final-yandex-project/internal/db"
+	"github.com/maxim-shestakov/final-yandex-project/pkg/handlers"
+	"github.com/maxim-shestakov/final-yandex-project/pkg/repo"
+	"github.com/maxim-shestakov/final-yandex-project/pkg/service"
 	//swaggerFiles "github.com/swaggo/files"     // swagger embed files
 	//ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 )
@@ -23,9 +29,15 @@ import (
 // @contact.url https://github.com/maxim-shestakov
 
 func main() {
+	dbsqlite, err := db.InitDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dbsqlite.Close()
+
 	// config := db.DBConfig{}
-	// config.User =os.Getenv("POSTGRES_USER")
-	// config.Password =os.Getenv("POSTGRES_PASSWORD")
+	// config.User = os.Getenv("POSTGRES_USER")
+	// config.Password = os.Getenv("POSTGRES_PASSWORD")
 	// config.Host = os.Getenv("POSTGRES_HOST")
 	// config.Port = os.Getenv("POSTGRES_PORT")
 	// config.Database = os.Getenv("POSTGRES_DB")
@@ -40,9 +52,9 @@ func main() {
 
 	// defer DB.Close()
 
-	// Repository:=repo.New(DB)
-	// Service:=service.New(Repository)
-	// Handlers:=h.New(Service)
+	Repository := repo.New(dbsqlite)
+	Service := service.New(Repository)
+	Handlers := handlers.New(Service)
 
 	appPort := ":" + os.Getenv("TODO_PORT")
 	if appPort == ":" {
@@ -51,15 +63,21 @@ func main() {
 
 	r := gin.Default()
 	r.Use(gin.Logger(), gin.Recovery())
-	webDir := "../web/"
-	r.StaticFile("/", webDir)
-	r.StaticFile("/js/scripts.min.js", path.Join(webDir, "js"))
-	r.StaticFile("/css/style.css", path.Join(webDir, "css"))
-	r.StaticFile("/favicon.ico", path.Join(webDir, "favicon.ico"))
+
+	Handlers.InitRoutes(r)
+	r.GET("/", Handlers.Index)
+	r.GET("api/nextdate", Handlers.NextDate)
+	r.POST("/api/task", Handlers.CreateTask)
+	r.GET("/api/tasks", Handlers.GetTasks)
+	r.GET("/api/task", Handlers.GetTaskById)
+	r.PUT("/api/task", Handlers.UpdateTask)
+	r.POST("/api/task/done", Handlers.DoneTask)
+	r.DELETE("/api/task", Handlers.DeleteTask)
+
 
 	//r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	err := r.Run(appPort)
+	err = r.Run(appPort)
 	if err != nil {
 		panic(err)
 	}
