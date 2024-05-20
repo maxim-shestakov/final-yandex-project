@@ -25,7 +25,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 		if len(checkSlice) != 1 {
 			return "", errors.New("invalid repeat")
 		}
-		
+
 		for {
 			d = d.AddDate(1, 0, 0)
 			if d.After(now) {
@@ -36,19 +36,6 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 		return "", errors.New("invalid repeat")
 	case "w":
 		return "", errors.New("invalid repeat")
-	// case "m":
-	// 	if len(checkSlice) > 3 {
-	// 		return "", errors.New("invalid repeat")
-	// 	}
-
-	// 	days := strings.Split(checkSlice[1], ",")
-
-	// 	for _, day := range days {
-	// 		if day >= 400 {
-	// 			return "", errors.New("invalid repeat")
-	// 		}
-	// 	}
-	// 	break
 	case "d":
 		if len(checkSlice) == 2 {
 			days, err := strconv.Atoi(checkSlice[1])
